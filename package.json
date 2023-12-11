@@ -1,0 +1,21 @@
+{
+  "name": "post-messager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/esm/index.js",
+  "scripts": {
+    "test": "./node_modules/.bin/ts-node ./test/test.ts",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "./node_modules/.bin/tsc",
+    "build:esm": "./node_modules/.bin/tsc -outDir dist/esm -module ES6",
+    "watch":"./node_modules/.bin/tsc --watch -outDir dist/esm -module ES6"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^20.10.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
