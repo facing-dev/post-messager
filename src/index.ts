@@ -25,7 +25,7 @@ export default class PostMessager<T> {
         rej: Function
     }> = new Map
     #doneTimeout: number
-    get doneMapSize(){
+    get doneMapSize() {
         return this.#doneMap.size
     }
     constructor(opt: {
@@ -71,6 +71,9 @@ export default class PostMessager<T> {
             id,
             timestamp,
             __byPM: true
+        }
+        if(this.#target===null){
+            throw 'post-messager: target'
         }
         this.#target.postMessage(message, this.#targetOrigin)
     }
