@@ -5,6 +5,7 @@ interface RawMessage<T> {
 interface RawDown {
     type: "Done"
     doneId: string
+    data: any
 }
 type Raw<T> = (RawMessage<T> | RawDown) & {
     __byPM: true
@@ -50,17 +51,18 @@ export default class PostMessager<T> {
             const rawData = event.data as Raw<T>
             // const rawData = JSON.parse(event.data) as Raw<T>
             if (rawData.type === 'Message') {
-                const doneCb = () => {
+                const doneCb = (data?: any) => {
                     this.#post({
                         type: 'Done',
                         doneId: rawData.id,
+                        data: data
                     })
                 }
                 opt.rawHandler?.(rawData, doneCb)
                 opt.handler(rawData.data, doneCb)
             }
             if (rawData.type === 'Done') {
-                this.#doneMap.get(rawData.doneId)?.res()
+                this.#doneMap.get(rawData.doneId)?.res(rawData.data)
             }
         }
         window.addEventListener('message', this.#listenerHandler)
@@ -72,25 +74,25 @@ export default class PostMessager<T> {
             timestamp,
             __byPM: true
         }
-        if(this.#target===null){
+        if (this.#target === null) {
             throw 'post-messager: target'
         }
         this.#target.postMessage(message, this.#targetOrigin)
     }
     post(data: T, promise?: false): void
-    post(data: T, promise: true): Promise<void>
-    post(data: T, promise?: boolean): Promise<void> | void {
+    post<PT = void>(data: T, promise: true): Promise<PT>
+    post(data: T, promise?: boolean): Promise<any> | void {
         const id = generateId()
         const timestamp = Date.now()
-        const p = promise ? new Promise<void>((res, rej) => {
+        const p = promise ? new Promise<any>((res, rej) => {
             const timeout = setTimeout(() => {
                 this.#doneMap.get(id)?.rej()
             }, this.#doneTimeout);
             this.#doneMap.set(id, {
-                res: () => {
+                res: (data: any) => {
                     clearTimeout(timeout)
                     this.#doneMap.delete(id)
-                    res()
+                    res(data)
                 },
                 rej: () => {
                     this.#doneMap.delete(id)
